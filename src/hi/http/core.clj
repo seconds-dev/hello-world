@@ -18,7 +18,6 @@
 (defn router
   []
   [""
-   #_["/system/sync" (hitthespot.db.sync/make-router)]
    ["/demo" (demo/make-router)]
    ["/ping" (fn [_] {:status 200, :body "pong"})]])
 
