@@ -7,7 +7,7 @@
 
 ## Open browser
 - http://localhost:28080/ping
-- http://localhost:28080/demo/page1
+- http://localhost:28080/demo/products
 
 # Calva tutorial
 command -> Fire up the "Getting Started" REPL

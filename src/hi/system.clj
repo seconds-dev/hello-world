@@ -17,7 +17,7 @@
                    (let [port (or (some->
                                    (get-env "NREPL_PORT")
                                    Integer/parseInt)
-                                  4001)]
+                                  14001)]
                      `(nrepl.server/start-server :port ~port
                                                  :bind "0.0.0.0"))
                    :stop '(nrepl.server/stop-server this)}}}))
