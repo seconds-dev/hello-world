@@ -10,6 +10,16 @@
                      {:kind "product" :name "demo2" :price 1800 :category "" :id "2"}
                      {:kind "product" :name "demo3" :price 10 :category "" :id "3"}]))
 
+(defn update-product
+  [id f]
+  (swap! products
+         (fn [products]
+           (map (fn [product]
+                  (if (= id (:id product))
+                    (f product)
+                    product))
+                products))))
+
 (defn- skeleton
   [_req body]
   [:body#body-pd {:class "bg-light"}
@@ -145,6 +155,10 @@
 
     :else
     (render-view (product-view req))))
+
+(comment
+  (swap! products (fn [prods] (filter #(not= (:id %) "2") prods)))
+  (update-product "1" (fn [p] (assoc p :price (* 1.1 (:price p))))))
 
 (defn make-router
   []
