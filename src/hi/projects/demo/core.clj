@@ -20,15 +20,16 @@
                     product))
                 products))))
 
-(defn- skeleton
-  [_req body]
-  [:body#body-pd {:class "bg-light"}
-   [:div {:class "page"}
-    [:div {:class "page-wrapper"}
-     [:div {:class "page-body"} [:div {:class "container-xl"} body]]]]])
+(defn delete-product
+  [id]
+  (swap! products (fn [prods] (filter #(not= (:id %) id) prods))))
+
+(comment
+  (delete-product "1")
+  (update-product "1" (fn [p] (assoc p :price (* 1.1 (:price p))))))
 
 (defn layout
-  [{req :req body :body head :head}]
+  [{_req :req body :body head :head}]
   [:html
    [:head [:title "歡迎光臨"]
     [:meta {:charset "utf-8"}]
@@ -39,7 +40,10 @@
     [:script {:src "https://cdn.jsdelivr.net/npm/hyperscript.org@0.9.11/dist/_hyperscript.min.js"}]
     [:script {:src "https://cdn.jsdelivr.net/npm/htmx.org@1.9.5/dist/htmx.min.js"}]
     (for [tag head] tag)]
-   (skeleton req body)])
+   [:body#body-pd {:class "bg-light"}
+    [:div {:class "page"}
+     [:div {:class "page-wrapper"}
+      [:div {:class "page-body"} [:div {:class "container-xl"} body]]]]]])
 
 (defn render-view
   [template]
@@ -155,10 +159,6 @@
 
     :else
     (render-view (product-view req))))
-
-(comment
-  (swap! products (fn [prods] (filter #(not= (:id %) "2") prods)))
-  (update-product "1" (fn [p] (assoc p :price (* 1.1 (:price p))))))
 
 (defn make-router
   []
