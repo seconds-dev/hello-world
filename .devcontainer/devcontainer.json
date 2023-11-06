@@ -16,8 +16,8 @@
             // Add the IDs of extensions you want installed when the container is created.
             "extensions": [
                 "vscjava.vscode-java-pack",
-                "borkdude.clj-kondo",
-                "betterthantomorrow.calva"
+                "betterthantomorrow.calva",
+                "MS-vsliveshare.vsliveshare"
             ]
         }
     },
