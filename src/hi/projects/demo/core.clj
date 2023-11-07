@@ -6,10 +6,13 @@
    [hi.http.common :as common]
    [hi.utils :refer [url]]))
 
+;; --------------- State -----------------
 (def products (atom [{:kind "product" :name "demo1" :price 150 :category "" :id "1"}
                      {:kind "product" :name "demo2" :price 1800 :category "" :id "2"}
                      {:kind "product" :name "demo3" :price 10 :category "" :id "3"}]))
 
+
+;; ---------------- Actions to update state ----------------
 (defn update-product
   [id f]
   (swap! products
@@ -28,6 +31,7 @@
   (delete-product "1")
   (update-product "1" (fn [p] (assoc p :price (* 1.1 (:price p))))))
 
+;; ---------------- Views ----------------
 (defn layout
   [{_req :req body :body head :head}]
   [:html
@@ -45,10 +49,7 @@
      [:div {:class "page-wrapper"}
       [:div {:class "page-body"} [:div {:class "container-xl"} body]]]]]])
 
-(defn render-view
-  [template]
-  {:status 200 :body (str (h/raw "<!DOCTYPE html>") (h/html template))})
-
+;; ---------------- Products ----------------
 (defn products-view
   [req]
   (layout
@@ -74,8 +75,9 @@
     (rr/redirect (url req :demo/product))
 
     :else
-    (render-view (products-view req))))
+    {:status 200 :body (str (h/raw "<!DOCTYPE html>") (h/html (products-view req)))}))
 
+;; ---------------- Product ----------------
 (defn product-view
   [req]
   (layout
@@ -158,8 +160,10 @@
       (rr/redirect (url req :demo/products)))
 
     :else
-    (render-view (product-view req))))
+    {:status 200 :body (str (h/raw "<!DOCTYPE html>") (h/html (product-view req)))}))
 
+
+;; ---------------- Router ----------------
 (defn make-router
   []
   ["" {:middleware (common/middlewares "demo")}
