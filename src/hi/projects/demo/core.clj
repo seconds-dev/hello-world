@@ -4,6 +4,7 @@
    [clojure.core.match :as m]
    [ring.util.response :as rr]
    [hi.http.common :as common]
+   [hi.projects.demo.unpoly]
    [hi.utils :refer [url]]))
 
 ;; --------------- State -----------------
@@ -167,5 +168,6 @@
 (defn make-router
   []
   ["" {:middleware (common/middlewares "demo")}
+   ["/unpoly" (hi.projects.demo.unpoly/make-router)]
    ["/products" {:handler #'products-hanlder :name :demo/products}]
    ["/products/:id" {:handler #'product-hanlder :name :demo/product}]])
