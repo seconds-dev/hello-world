@@ -64,7 +64,8 @@
                     (nil? (-> req :path-params :id)))
                 (assoc :action (url req :demo.unpoly/products :? {:action "create"})
                        :up-accept-location "/demo/unpoly/companies/$id"
-                       :up-on-accepted "up.validate('form', { params: {'partial':true, 'company-id': value.id } })")
+                       #_#_:up-on-accepted "console.log(value)"
+                       :up-on-accepted "up.validate('form', { params: {'partial':true, 'company-id': value.id }})")
                 (not= "create" (-> req :params :action))
                 (assoc :action (url req :demo.unpoly/project {:id (:id project)})))]
     (apply html/set-attr (interleave (keys attrs) (vals attrs))))
@@ -92,22 +93,25 @@
                    (html/remove-class "hidden")))
 
 (defn projects>> [req]
-  (def req req)
   (m/match
    req
 
     {:request-method :post :params {:action "create"}}
     (let [project (-> req :params)]
+      (tap> project)
       (cond
+        ;; callback from created company; (tap> project)
         (edn/read-string (:partial project))
         {:body (apply str (<<main-layout>> req (html/content (<project-comp> {:req req :project {:company "yoyoyo"}}))))}
 
+        ;; error happened
         (= "666" (-> project :price))
         (let [req (merge req {:flash {:project-name-error "true"}})]
           {:body (apply str (<<main-layout>> req (html/content (<project-comp> {:req req :project project}))))
            :status 422})
 
         :else
+        ;; should insert project
         (rr/redirect (url req :demo.unpoly/projects))))
 
     {:request-method :get :params {:action "create"}}
@@ -154,6 +158,7 @@
             main-template (<<main-layout>> req (html/content (<company-comp> {:req req :company company})))]
         {:body (apply str main-template)
          :status 422})
+      ;; should insert company and redirect
       (rr/redirect (url req :demo.unpoly/company {:id 3})))
     
     {:request-method :get :params {:action "create"}}
