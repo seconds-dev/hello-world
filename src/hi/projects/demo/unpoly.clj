@@ -37,6 +37,14 @@
                                        :up-layer "new"
                                        :up-accept-location "/demo/unpoly/projects"
                                        :up-on-accepted "up.reload('#project-table', { focus: ':main' })")
+  
+  [:a#expand-link] (html/set-attr
+                    :href (url req :demo.unpoly/projects :? {:action "get-rows"})
+                    :up-target "#project-table-body:after"
+                    ;; :up-target ":none"
+                    #_#_:up-on-rendered "console.log('Updated fragment is', document.querySelector('.target'))"
+                    :up-history "false"
+                    :up-on-rendered "console.log(result)")
 
   [:#project-table-body [:tr html/first-of-type]]
   (html/clone-for [proj @projects]
@@ -96,9 +104,19 @@
   (m/match
    req
 
+    {:request-method :get :params {:action "get-rows"}}
+    {#_#_:headers {"X-Up-Target" ".project-table-body"}
+     :body (apply str (html/emit*
+                       ((html/snippet
+                         "hi/projects/demo/projects-list.html"
+                         [:#project-table :table]
+                         []
+                         [:tr [:td (html/nth-child 1)]] (html/content "HI")
+                         [:tr [:td (html/nth-child 2)]] (html/content "YO")
+                         [:tr [:td (html/nth-child 3)]] (html/content "$$$$$")))))}
+
     {:request-method :post :params {:action "create"}}
     (let [project (-> req :params)]
-      (tap> project)
       (cond
         ;; callback from created company; (tap> project)
         (edn/read-string (:partial project))
