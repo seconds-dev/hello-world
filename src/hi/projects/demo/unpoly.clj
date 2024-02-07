@@ -4,7 +4,7 @@
             #_[clojure.string :as string]
             [net.cgrand.enlive-html :as html]
             #_[hickory.core :as hickory]
-            [hi.utils :refer [url]]
+            [hi.utils :refer [url url-pattern]]
             [ring.util.response :as rr]))
 
 ;; --------------- State -----------------
@@ -71,7 +71,7 @@
                 (or (= "create" (-> req :params :action))
                     (nil? (-> req :path-params :id)))
                 (assoc :action (url req :demo.unpoly/products :? {:action "create"})
-                       :up-accept-location "/demo/unpoly/companies/$id"
+                       :up-accept-location (url-pattern req :demo.unpoly/company)
                        #_#_:up-on-accepted "console.log(value)"
                        :up-on-accepted "up.validate('form', { params: {'partial':true, 'company-id': value.id }})")
                 (not= "create" (-> req :params :action))

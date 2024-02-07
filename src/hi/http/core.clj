@@ -55,7 +55,7 @@
   (httpkit/run-server #'app-handler
                       {:port (or (some-> (get-env "PORT")
                                          (Integer/parseInt))
-                                 28080)
+                                 8080)
                        :thread 32
                        :max-body (* 8388608 100)
                        ;; The maximum URL size of Chrome is 2MB
