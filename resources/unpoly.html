@@ -557,6 +557,28 @@
 </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.js"></script>
+    <script>
+      up.on('up:assets:changed', function ({ oldAssets, newAssets }) {
+        console.log('oldAssets: ', oldAssets);
+        console.log('newAssets: ', newAssets);
+        for (let newAsset of newAssets) {
+          if (!isAssetLoaded(oldAssets, newAsset)) {
+            // document.head.append(newAsset)
+            console.log('detect new assets:', newAsset);
+            document.head.append(newAsset);
+          }
+        }
+      })
+
+      function isAssetLoaded(oldAssets, newAsset) {
+        return Array.from(oldAssets).find(oldAsset => {
+          // It's <script src="app.js"> but <link rel="stylesheet" href="app.css">
+          const oldPath = oldAsset.src || oldAsset.href
+          const newPath = newAsset.src || newAsset.href
+          return oldPath === newPath;
+        });
+      }
+    </script>
 </body>
 
 </html>
