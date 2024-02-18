@@ -111,7 +111,7 @@
 
 #_:clj-kondo/ignore
 (html/defsnippet <project-edit-note>
-  "hi/projects/demo/project-edit-note.html"
+  "project-edit-note.html"
   [:#edit-note]
   [{req :req project :project}]
   [:form] (html/set-attr :action (url req :demo.unpoly/project {:id (:id project)}
@@ -124,7 +124,7 @@
 
 #_:clj-kondo/ignore
 (html/defsnippet <project-view-note>
-  "hi/projects/demo/project-edit-note.html"
+  "project-edit-note.html"
   [:#view-note]
   [{req :req project :project}]
   [:div :div] (html/content (:note project))
