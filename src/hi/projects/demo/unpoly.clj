@@ -8,9 +8,30 @@
             [ring.util.response :as rr]))
 
 ;; --------------- State -----------------
-(def projects (atom [{:kind "project" :name "demo1" :price 150 :company "demo company 1" :id "1"}
-                     {:kind "project" :name "demo2" :price 1800 :company "demo company 2" :id "2"}
-                     {:kind "project" :name "demo3" :price 10 :company "demo company 3" :id "3"}]))
+(def projects (atom [{:kind "project" :name "demo1" :price 150
+                      :company "demo company 1" :id "1" :note "note1"}
+                     {:kind "project" :name "demo2" :price 1800
+                      :company "demo company 2" :id "2" :note "note2"}
+                     {:kind "project" :name "demo3" :price 10
+                      :company "demo company 3" :id "3" :note "note3"}]))
+
+(defn update-project
+  [id f]
+  (swap! projects
+         (fn [projs]
+           (map (fn [p]
+                  (if (= id (:id p))
+                    (f p)
+                    p))
+                projs))))
+
+(defn delete-project
+  [id]
+  (swap! projects (fn [prods] (filter #(not= (:id %) id) prods))))
+
+(comment
+  (delete-project "1")
+  (update-project "1" (fn [p] (assoc p :price (* 1.1 (:price p))))))
 
 (def companies (atom [{:kind "company" :name "demo company 1" :id "1"}
                       {:kind "company" :name "demo company 2" :id "2"}
@@ -21,9 +42,12 @@
 #_:clj-kondo/ignore
 (html/deftemplate <<main-layout>>
   "hi/projects/demo/unpoly.html"
-  [req main]
+  [{:keys [req headers main]
+    :or {headers []}}]
 
   [:main] main
+  [:head] (fn [head] (assoc head :content (concat (:content head) headers)))
+
   [:a#project-link] (html/set-attr :href
                                    (url req :demo.unpoly/projects)))
 
@@ -50,7 +74,9 @@
   (html/clone-for [proj @projects]
                   [:tr [:td (html/nth-child 1)]] (html/content (:name proj))
                   [:tr [:td (html/nth-child 2)]] (html/content (:company proj))
-                  [:tr [:td (html/nth-child 3)]] (html/content (str "$" (:price proj)))))
+                  [:tr [:td (html/nth-child 3)]] (html/content (str "$" (:price proj)))
+                  [:tr [:td (html/nth-child 4)]] (html/content (<project-view-note> {:req req
+                                                                                     :project proj}))))
 
 #_:clj-kondo/ignore
 (html/defsnippet <project-comp>
@@ -84,6 +110,29 @@
 
   [:#company] (html/set-attr :value (:company project ""))
   [:#price] (html/set-attr :value (:price project "")))
+
+#_:clj-kondo/ignore
+(html/defsnippet <project-edit-note>
+  "hi/projects/demo/project-edit-note.html"
+  [:#edit-note]
+  [{req :req project :project}]
+  [:form] (html/set-attr :action (url req :demo.unpoly/project {:id (:id project)}
+                                      :? {:action "update-note"})
+                         :method "post"
+                         :up-target ".project-note"
+                         :up-history "false"
+                         #_#_:up-source (url req :demo.unpoly/projects.note {:id (:id project)}))
+  [:#note] (html/set-attr :value (:note project "")))
+
+#_:clj-kondo/ignore
+(html/defsnippet <project-view-note>
+  "hi/projects/demo/project-edit-note.html"
+  [:#view-note]
+  [{req :req project :project}]
+  [:div :div] (html/content (:note project))
+  [:div :a] (html/set-attr
+             :href (url req :demo.unpoly/projects.note {:id (:id project)})
+             :up-target ".project-note"))
 
 #_:clj-kondo/ignore
 (html/defsnippet <company-comp>
@@ -120,12 +169,13 @@
       (cond
         ;; callback from created company; (tap> project)
         (edn/read-string (:partial project))
-        {:body (apply str (<<main-layout>> req (html/content (<project-comp> {:req req :project {:company "yoyoyo"}}))))}
+        {:body (apply str (<<main-layout>> {:req req
+                                            :main (html/content (<project-comp> {:req req :project {:company "yoyoyo"}}))}))}
 
         ;; error happened
         (= "666" (-> project :price))
         (let [req (merge req {:flash {:project-name-error "true"}})]
-          {:body (apply str (<<main-layout>> req (html/content (<project-comp> {:req req :project project}))))
+          {:body (apply str (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req :project project}))}  ))
            :status 422})
 
         :else
@@ -133,38 +183,49 @@
         (rr/redirect (url req :demo.unpoly/projects))))
 
     {:request-method :get :params {:action "create"}}
-    (let [main-template (<<main-layout>> req (html/content (<project-comp> {:req req})))]
+    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))})]
       {:body (apply str main-template)})
 
     {:request-method :get}
-    (let [main-template (<<main-layout>> req (html/content (<project-list> req)))]
+    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-list> req))})]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
 
 (defn project>> [req]
-  (let [main-template (<<main-layout>> req (html/content (<project-comp> {:req req})))]
-    {:body (apply str main-template)}))
+  (m/match
+   req
 
-#_(defn projects-edit>> [req]
-    (m/match
-     req
+    {:request-method :post :params {:action "update-note"}}
+    (do
+      (update-project (-> req :path-params :id)
+                      (fn [p] (assoc p :note (-> req :params :note))))
+      (rr/redirect (url req :demo.unpoly/projects.note {:id (-> req :path-params :id)}
+                        :? {:action "view-note"})))
 
-      {:request-method :post :params {:action "update"}}
-      (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
-            req (merge req {:flash {:project-name-error "true"}})
-            main-template (html/template "hi/projects/demo/unpoly.html" []
-                                         [:main] (html/content (<project-comp> {:req req :project project})))]
-        {:body (apply str (main-template))
-         :status 422})
+    {:request-method :get}
+    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))})]
+      {:body (apply str main-template)})
 
-      {:request-method :get}
-      (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
-            main-template (html/template "hi/projects/demo/unpoly.html" []
-                                         [:main] (html/content (<project-comp> {:req req :project project})))]
-        {:body (apply str (main-template))})
+    :else (rr/not-found "Unsupported.")))
 
-      :else (rr/not-found "Unsupported.")))
+(defn projects-note>> [req]
+  (m/match
+   req
+    {:request-method :get :params {:action "view-note"}}
+    (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
+          main-template (<<main-layout>> {:req req
+                                          :main (html/content (<project-view-note> {:req req
+                                                                                    :project project}))})]
+      {:body (apply str main-template)})
+
+    {:request-method :get}
+    (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
+          main-template (<<main-layout>> {:req req
+                                          :main (html/content (<project-edit-note> {:req req :project project}))})]
+      {:body (apply str main-template)})
+
+    :else (rr/not-found "Unsupported.")))
 
 (defn companies>> [req]
   (m/match
@@ -173,18 +234,22 @@
     (if (= "error" (-> req :params :name))
       (let [company (merge (-> req :params) {:id 3})
             req (merge req {:flash {:project-name-error "true"}})
-            main-template (<<main-layout>> req (html/content (<company-comp> {:req req :company company})))]
+            main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))})]
         {:body (apply str main-template)
          :status 422})
       ;; should insert company and redirect
       (rr/redirect (url req :demo.unpoly/company {:id 3})))
     
     {:request-method :get :params {:action "create"}}
-    (let [main-template (<<main-layout>> req (html/content (<company-comp> {:req req})))]
+    (let [main-template (<<main-layout>> {:req req
+                                          :headers [{:tag :script
+                                                     :attrs {:src "https://unpkg.com/hyperscript.org@0.9.12"}
+                                                     :content []}]
+                                          :main (html/content (<company-comp> {:req req}))})]
       {:body (apply str main-template)})
 
     {:request-method :get}
-    (let [main-template (<<main-layout>> req (html/content (<company-comp> {:req req})))]
+    (let [main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req}))})]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
@@ -195,38 +260,17 @@
 
     {:request-method :get}
     (let [company (first (filter #(= (:id %) (-> req :path-params :id)) @companies))
-          main-template (<<main-layout>> req (html/content (<company-comp> {:req req :company company})))]
+          main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))})]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
-
-#_(defn companies-edit>> [req]
-    (m/match
-     req
-
-      {:request-method :post :params {:action "update"}}
-      (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @companies))
-            req (merge req {:flash {:project-name-error "true"}})
-            main-template (html/template "hi/projects/demo/unpoly.html" []
-                                         [:main] (html/content (<company-comp> {:req req :project project})))]
-        {:body (apply str (main-template))
-         :status 422})
-
-      {:request-method :get}
-      (let [company (first (filter #(= (:id %) (-> req :path-params :id)) @companies))
-            main-template (html/template "hi/projects/demo/unpoly.html" []
-                                         [:main] (html/content (<company-comp> {:req req :company company})))]
-        {:body (apply str (main-template))})
-
-      :else (rr/not-found "Unsupported.")))
 
 (defn make-router
   []
   [""
    ["/projects" {:handler projects>> :name :demo.unpoly/projects}]
    ["/projects/:id" {:handler project>> :name :demo.unpoly/project}]
-   #_["/projects/:id/edit" {:handler projects-edit>> :name :demo.unpoly/projects.edit}]
+   ["/projects/:id/note" {:handler projects-note>> :name :demo.unpoly/projects.note}]
 
    ["/companies" {:handler companies>> :name :demo.unpoly/companies}]
-   ["/companies/:id" {:handler company>> :name :demo.unpoly/company}]
-   #_["/companies/:id/edit" {:handler companies-edit>> :name :demo.unpoly/companies.edit}]])
+   ["/companies/:id" {:handler company>> :name :demo.unpoly/company}]])

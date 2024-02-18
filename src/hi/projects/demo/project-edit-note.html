@@ -6,28 +6,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.1/flowbite.min.css" rel="stylesheet" />
-    <script src="https://unpkg.com/hyperscript.org@0.9.12"></script>
 </head>
 
 <body>
-    <section id="company-comp-main">
-        <form>
-            <div class="grid gap-6 mb-6 md:grid-cols-2">
+    <section id="view-note">
+        <div class="project-note">
+            <div />
+            <a href="#" class="font-medium text-blue-600 hover:underline">Edit note</a>
+        </div>
+    </section>
+
+    <section id="edit-note">
+        <form class="project-note">
+            <div class="grid gap-6 mb-6">
                 <div>
-                    <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Company
-                        name</label>
-                    <input type="text" id="name" name="name"
+                    <label for="note" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Project
+                        note</label>
+                    <input type="text" id="note" name="note"
                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                         placeholder="" required>
-                    <p id="name-error" class="mt-2 text-sm text-red-600 dark:text-red-500 hidden"><span
-                            class="font-medium">Oh,
-                            snapp!</span>
-                        Some error message.</p>
-                </div>
-                <div>
-                    <a _="on click remove me">
-                        Remove Me
-                    </a>
                 </div>
             </div>
             <button type="submit"
