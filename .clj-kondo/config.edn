@@ -1,0 +1,3 @@
+{:hooks {:macroexpand {net.cgrand.enlive-html/deftemplate net.cgrand.enlive-html/deftemplate
+                       net.cgrand.enlive-html/defsnippet net.cgrand.enlive-html/defsnippet}}
+ :lint-as {net.cgrand.enlive-html/clone-for clojure.core/for}}

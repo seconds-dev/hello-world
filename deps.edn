@@ -27,4 +27,4 @@
         djblue/portal {:mvn/version "0.42.1"}
         org.clj-commons/hickory {:mvn/version "0.7.4"}
         enlive/enlive {:mvn/version "1.1.6"}}
- :paths ["src"]}
+ :paths ["src" "resources"]}

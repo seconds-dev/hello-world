@@ -37,11 +37,10 @@
                       {:kind "company" :name "demo company 2" :id "2"}
                       {:kind "company" :name "demo company 3" :id "3"}]))
 
-(html/template "hi/projects/demo/unpoly.html" [])
+(html/template "unpoly.html" [])
 
-#_:clj-kondo/ignore
 (html/deftemplate <<main-layout>>
-  "hi/projects/demo/unpoly.html"
+  "unpoly.html"
   [{:keys [req headers main]
     :or {headers []}}]
 
@@ -51,9 +50,9 @@
   [:a#project-link] (html/set-attr :href
                                    (url req :demo.unpoly/projects)))
 
-#_:clj-kondo/ignore
+
 (html/defsnippet <project-list>
-  "hi/projects/demo/projects-list.html"
+  "projects-list.html"
   [:#projects-list-main]
   [req]
   [:a#new-project-link] (html/set-attr :href (url req :demo.unpoly/projects :? {:action "create"})
@@ -78,9 +77,8 @@
                   [:tr [:td (html/nth-child 4)]] (html/content (<project-view-note> {:req req
                                                                                      :project proj}))))
 
-#_:clj-kondo/ignore
 (html/defsnippet <project-comp>
-  "hi/projects/demo/projects-new.html"
+  "projects-new.html"
   [:#projects-comp-main]
   [{req :req project :project}]
   [:form] (html/set-attr :action (if (or (= "new" (-> req :params :action))
@@ -113,7 +111,7 @@
 
 #_:clj-kondo/ignore
 (html/defsnippet <project-edit-note>
-  "hi/projects/demo/project-edit-note.html"
+  "project-edit-note.html"
   [:#edit-note]
   [{req :req project :project}]
   [:form] (html/set-attr :action (url req :demo.unpoly/project {:id (:id project)}
@@ -126,7 +124,7 @@
 
 #_:clj-kondo/ignore
 (html/defsnippet <project-view-note>
-  "hi/projects/demo/project-edit-note.html"
+  "project-edit-note.html"
   [:#view-note]
   [{req :req project :project}]
   [:div :div] (html/content (:note project))
@@ -136,7 +134,7 @@
 
 #_:clj-kondo/ignore
 (html/defsnippet <company-comp>
-  "hi/projects/demo/company-new.html"
+  "company-new.html"
   [:#company-comp-main]
   [{req :req company :company}]
   [:form] (html/set-attr :action (if (= "create" (-> req :params :action))
