@@ -50,7 +50,6 @@
   [:a#project-link] (html/set-attr :href
                                    (url req :demo.unpoly/projects)))
 
-#_:clj-kondo/ignore
 (html/defsnippet <project-view-note>
   "project-edit-note.html"
   [:#view-note]
