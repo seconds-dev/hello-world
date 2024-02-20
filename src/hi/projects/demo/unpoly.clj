@@ -50,6 +50,15 @@
   [:a#project-link] (html/set-attr :href
                                    (url req :demo.unpoly/projects)))
 
+#_:clj-kondo/ignore
+(html/defsnippet <project-view-note>
+  "project-edit-note.html"
+  [:#view-note]
+  [{req :req project :project}]
+  [:div :div] (html/content (:note project))
+  [:div :a] (html/set-attr
+             :href (url req :demo.unpoly/projects.note {:id (:id project)})
+             :up-target ".project-note"))
 
 (html/defsnippet <project-list>
   "projects-list.html"
@@ -123,16 +132,6 @@
   [:#note] (html/set-attr :value (:note project "")))
 
 #_:clj-kondo/ignore
-(html/defsnippet <project-view-note>
-  "project-edit-note.html"
-  [:#view-note]
-  [{req :req project :project}]
-  [:div :div] (html/content (:note project))
-  [:div :a] (html/set-attr
-             :href (url req :demo.unpoly/projects.note {:id (:id project)})
-             :up-target ".project-note"))
-
-#_:clj-kondo/ignore
 (html/defsnippet <company-comp>
   "company-new.html"
   [:#company-comp-main]
@@ -167,13 +166,13 @@
       (cond
         ;; callback from created company; (tap> project)
         (edn/read-string (:partial project))
-        {:body (apply str (<<main-layout>> {:req req
-                                            :main (html/content (<project-comp> {:req req :project {:company "yoyoyo"}}))}))}
+        {:body (apply str (^clojure.lang.Seqable (<<main-layout>> {:req req
+                                                                   :main (html/content (<project-comp> {:req req :project {:company "yoyoyo"}}))})))}
 
         ;; error happened
         (= "666" (-> project :price))
         (let [req (merge req {:flash {:project-name-error "true"}})]
-          {:body (apply str (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req :project project}))}  ))
+          {:body (apply str (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req :project project}))})))
            :status 422})
 
         :else
@@ -181,11 +180,11 @@
         (rr/redirect (url req :demo.unpoly/projects))))
 
     {:request-method :get :params {:action "create"}}
-    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))})]
+    (let [main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))}))]
       {:body (apply str main-template)})
 
     {:request-method :get}
-    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-list> req))})]
+    (let [main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<project-list> req))}))]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
@@ -202,7 +201,7 @@
                         :? {:action "view-note"})))
 
     {:request-method :get}
-    (let [main-template (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))})]
+    (let [main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<project-comp> {:req req}))}))]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
@@ -212,15 +211,15 @@
    req
     {:request-method :get :params {:action "view-note"}}
     (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
-          main-template (<<main-layout>> {:req req
-                                          :main (html/content (<project-view-note> {:req req
-                                                                                    :project project}))})]
+          main-template (^clojure.lang.Seqable (<<main-layout>> {:req req
+                                                                 :main (html/content (^clojure.lang.Seqable (<project-view-note> {:req req
+                                                                                                                                  :project project})))}))]
       {:body (apply str main-template)})
 
     {:request-method :get}
     (let [project (first (filter #(= (:id %) (-> req :path-params :id)) @projects))
-          main-template (<<main-layout>> {:req req
-                                          :main (html/content (<project-edit-note> {:req req :project project}))})]
+          main-template (^clojure.lang.Seqable (<<main-layout>> {:req req
+                                                                 :main (html/content (<project-edit-note> {:req req :project project}))}))]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
@@ -232,22 +231,22 @@
     (if (= "error" (-> req :params :name))
       (let [company (merge (-> req :params) {:id 3})
             req (merge req {:flash {:project-name-error "true"}})
-            main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))})]
+            main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))}))]
         {:body (apply str main-template)
          :status 422})
       ;; should insert company and redirect
       (rr/redirect (url req :demo.unpoly/company {:id 3})))
     
     {:request-method :get :params {:action "create"}}
-    (let [main-template (<<main-layout>> {:req req
-                                          :headers [{:tag :script
-                                                     :attrs {:src "https://unpkg.com/hyperscript.org@0.9.12"}
-                                                     :content []}]
-                                          :main (html/content (<company-comp> {:req req}))})]
+    (let [main-template (^clojure.lang.Seqable (<<main-layout>> {:req req
+                                                                 :headers [{:tag :script
+                                                                            :attrs {:src "https://unpkg.com/hyperscript.org@0.9.12"}
+                                                                            :content []}]
+                                                                 :main (html/content (<company-comp> {:req req}))}))]
       {:body (apply str main-template)})
 
     {:request-method :get}
-    (let [main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req}))})]
+    (let [main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req}))}))]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
@@ -258,7 +257,7 @@
 
     {:request-method :get}
     (let [company (first (filter #(= (:id %) (-> req :path-params :id)) @companies))
-          main-template (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))})]
+          main-template (^clojure.lang.Seqable (<<main-layout>> {:req req :main (html/content (<company-comp> {:req req :company company}))}))]
       {:body (apply str main-template)})
 
     :else (rr/not-found "Unsupported.")))
