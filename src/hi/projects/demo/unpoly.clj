@@ -50,6 +50,16 @@
   [:a#project-link] (html/set-attr :href
                                    (url req :demo.unpoly/projects)))
 
+#_:clj-kondo/ignore
+(html/defsnippet <project-view-note>
+  "project-edit-note.html"
+  [:#view-note]
+  [{req :req project :project}]
+  [:div :div] (html/content (:note project))
+  [:div :a] (html/set-attr
+             :href (url req :demo.unpoly/projects.note {:id (:id project)})
+             :up-target ".project-note"))
+
 
 (html/defsnippet <project-list>
   "projects-list.html"
@@ -121,16 +131,6 @@
                          :up-history "false"
                          #_#_:up-source (url req :demo.unpoly/projects.note {:id (:id project)}))
   [:#note] (html/set-attr :value (:note project "")))
-
-#_:clj-kondo/ignore
-(html/defsnippet <project-view-note>
-  "project-edit-note.html"
-  [:#view-note]
-  [{req :req project :project}]
-  [:div :div] (html/content (:note project))
-  [:div :a] (html/set-attr
-             :href (url req :demo.unpoly/projects.note {:id (:id project)})
-             :up-target ".project-note"))
 
 #_:clj-kondo/ignore
 (html/defsnippet <company-comp>
